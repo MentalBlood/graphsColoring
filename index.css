@@ -1,0 +1,17 @@
+.vertex.enabled {
+	fill: orange;
+	transition-duration: 0.5s;
+}
+
+.vertex:not(.enabled) {
+	fill: lightgray;
+	transition-duration: 0.5s;
+}
+
+.edge {
+	stroke: lightgray;
+}
+
+.map {
+	background-color: black;
+}
