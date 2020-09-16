@@ -1,6 +1,6 @@
 'use strict';
 
-const circleRadius = 8;
+const circleRadius = 4;
 
 function Vertex(x, y, color, key, onClick) {
   const colorClass = color ? 'enabled' : '';

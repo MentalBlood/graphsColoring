@@ -18,10 +18,8 @@ function createVertex(x, y) {
   };
 }
 
-function shuffleArray(array, limit) {
-  limit = limit === undefined ? array.length : Math.min(array.length, limit);
-
-  for (let i = 0; i < limit; i++) {
+function shuffleArray(array) {
+  for (let i = 0; i < array.length; i++) {
     const j = Math.floor(Math.random() * (array.length - i));
     const temp = array[i];
     array[i] = array[j];
@@ -29,9 +27,10 @@ function shuffleArray(array, limit) {
   }
 }
 
+const cellsInLine = Math.ceil((100 - circleRadius * 3) / (circleRadius * 3));
+
 function generateRandomVertexes(number) {
   const vertexes = [];
-  const cellsInLine = Math.ceil((100 - circleRadius * 3) / (circleRadius * 3));
   number = Math.min(cellsInLine * cellsInLine, number);
   const possibleCoordinates = [];
 
@@ -141,7 +140,7 @@ class Root extends React.Component {
   }
 
   generateNewMap() {
-    const vertexesList = generateRandomVertexes(10);
+    const vertexesList = generateRandomVertexes(Math.floor(cellsInLine * cellsInLine / 2.5));
     const vertexesDict = Object.assign({}, ...vertexesList.map(vertex => {
       const x = vertex.x;
       const y = vertex.y;
