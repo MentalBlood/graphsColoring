@@ -2,14 +2,21 @@
 
 const circleRadius = 4;
 
-function Vertex(x, y, color, key, onClick) {
+function Vertex(props) {
+  const {
+    x,
+    y,
+    color,
+    id,
+    onClick
+  } = props;
   const colorClass = color ? 'enabled' : '';
   return /*#__PURE__*/React.createElement("circle", {
     className: 'vertex ' + colorClass,
     cx: x,
     cy: y,
-    key: key,
     r: circleRadius + 'vmin',
-    onClick: e => onClick(key)
+    onClick: e => onClick(id),
+    onWheel: e => console.log(id)
   });
 }

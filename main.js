@@ -14,7 +14,8 @@ function createVertex(x, y) {
     x: x * circleRadius * 3 + circleRadius * 1.5,
     y: y * circleRadius * 3 + circleRadius * 1.5,
     color: Math.random() >= 0.5,
-    connectedVertexesKeys: []
+    connectedVertexesKeys: [],
+    internalMap: undefined
   };
 }
 
@@ -190,7 +191,14 @@ class Root extends React.Component {
         key: index
       });
     }), Object.entries(vertexes).map(([key, vertex]) => {
-      return Vertex(vertex.x + 'vw', vertex.y + 'vh', vertex.color, key, this.changeVertexColor);
+      return /*#__PURE__*/React.createElement(Vertex, {
+        x: vertex.x + 'vw',
+        y: vertex.y + 'vh',
+        color: vertex.color,
+        id: key,
+        onClick: this.changeVertexColor,
+        key: key
+      });
     })));
   }
 
