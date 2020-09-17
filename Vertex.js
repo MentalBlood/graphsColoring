@@ -8,7 +8,8 @@ function Vertex(props) {
     y,
     color,
     id,
-    onClick
+    onClick,
+    onWheel
   } = props;
   const colorClass = color ? 'enabled' : '';
   return /*#__PURE__*/React.createElement("circle", {
@@ -17,6 +18,6 @@ function Vertex(props) {
     cy: y,
     r: circleRadius + 'vmin',
     onClick: e => onClick(id),
-    onWheel: e => console.log(id)
+    onWheel: e => onWheel(e, id)
   });
 }

@@ -136,7 +136,10 @@ class GraphMap extends React.Component {
   constructor(props) {
     super(props);
     this.state = this.generateNewMap();
+    this.state['renderInternal'] = false;
+    this.state['internalId'] = undefined;
     this.changeVertexColor = this.changeVertexColor.bind(this);
+    this.handleWheel = this.handleWheel.bind(this);
   }
 
   generateNewMap() {
@@ -166,8 +169,23 @@ class GraphMap extends React.Component {
     });
   }
 
+  handleWheel(e, id) {
+    if (e.deltaY < 0) {
+      this.setState(state => {
+        const vertex = state.vertexes[id];
+        if (vertex.internalMap === undefined) vertex.internalMap = /*#__PURE__*/React.createElement(GraphMap, null);
+        state.internalId = id;
+        state.renderInternal = true;
+        return state;
+      });
+    }
+
+    console.log(e.deltaY, id);
+  }
+
   render() {
     const vertexes = this.state.vertexes;
+    if (this.state.renderInternal) return vertexes[this.state.internalId].internalMap;
     const edges = this.state.edges;
     return /*#__PURE__*/React.createElement("svg", {
       className: "graphMap",
@@ -192,6 +210,7 @@ class GraphMap extends React.Component {
         color: vertex.color,
         id: key,
         onClick: this.changeVertexColor,
+        onWheel: this.handleWheel,
         key: key
       });
     }));
