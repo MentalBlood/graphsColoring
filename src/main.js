@@ -21,7 +21,7 @@ function createVertex(x, y) {
 
 function shuffleArray(array) {
 	for(let i = 0; i < array.length; i++){
-		const j = Math.floor(Math.random() * (array.length-i))
+		const j = Math.floor(Math.random() * (array.length-i-1))
 		const temp = array[i]
 		array[i] = array[j]
 		array[j] = temp
@@ -40,6 +40,7 @@ function generateRandomVertexes(number) {
 			possibleCoordinates.push({x: x, y: y});
 	shuffleArray(possibleCoordinates);
 	possibleCoordinates.slice(0, number).forEach(c => vertexes.push(createVertex(c.x, c.y)));
+	console.log(vertexes);
 	return vertexes;
 }
 
@@ -102,8 +103,8 @@ function createRandomEdges(vertexes) {
 				(e.toKey !== anotherVertexKey)
 			);
 			if (
-				anotherVertexKey !== vertexKey &&
-				!(anotherVertexKey in vertexes[vertexKey].connectedVertexesKeys) &&
+				(anotherVertexKey !== vertexKey) &&
+				!vertexes[vertexKey].connectedVertexesKeys.includes(anotherVertexKey) &&
 				edgesToCheck.every(anotherEdge =>
 					!edgesIntersect2(edge, anotherEdge, vertexes)) &&
 				vertexesKeysToCheck
@@ -121,13 +122,14 @@ function createRandomEdges(vertexes) {
 		}
 		if (found == false)
 			continue;
-		const finalAnotherVertexKey = edge.toKey;
 		
-		vertexes[vertexKey].connectedVertexesKeys.push(finalAnotherVertexKey);
-		vertexes[finalAnotherVertexKey].connectedVertexesKeys.push(vertexKey);
+		vertexes[edge.fromKey].connectedVertexesKeys.push(edge.toKey);
+		vertexes[edge.toKey].connectedVertexesKeys.push(edge.fromKey);
 		
-		alreadyConnectedVertexesKeysDict[vertexKey] = true;
-		alreadyConnectedVertexesKeysDict[finalAnotherVertexKey] = true;
+		alreadyConnectedVertexesKeysDict[edge.fromKey] = true;
+		alreadyConnectedVertexesKeysDict[edge.toKey] = true;
+
+		console.log(edge.fromKey, '->', edge.toKey);
 
 		edges.push(edge);
 	};
@@ -148,7 +150,7 @@ class Root extends React.Component {
 		const vertexesDict = Object.assign({}, ...vertexesList.map(vertex => {
 			const x = vertex.x;
 			const y = vertex.y;
-			const vertexId = x * y * (x > y ? 1 : -1);
+			const vertexId = x.toString() + ' ' + y.toString();
 			return {[vertexId]: vertex};
 		}));
 		return {
