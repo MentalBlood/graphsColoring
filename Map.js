@@ -138,8 +138,10 @@ class GraphMap extends React.Component {
     this.state = this.generateNewMap();
     this.state['renderInternal'] = false;
     this.state['internalId'] = undefined;
+    this.state['zoomOutFunction'] = props.zoomOutFunction ? props.zoomOutFunction : () => undefined;
     this.changeVertexColor = this.changeVertexColor.bind(this);
     this.handleWheel = this.handleWheel.bind(this);
+    this.zoomOutOfInternalMap = this.zoomOutOfInternalMap.bind(this);
   }
 
   generateNewMap() {
@@ -169,11 +171,26 @@ class GraphMap extends React.Component {
     });
   }
 
+  zoomOutOfInternalMap() {
+    this.setState({
+      renderInternal: false,
+      internalId: undefined
+    });
+  }
+
   handleWheel(e, id) {
     if (e.deltaY < 0) {
+      const zoomOutFunction = this.zoomOutOfInternalMap;
       this.setState(state => {
         const vertex = state.vertexes[id];
-        if (vertex.internalMap === undefined) vertex.internalMap = /*#__PURE__*/React.createElement(GraphMap, null);
+
+        if (vertex.internalMap === undefined) {
+          console.log('new internal map');
+          vertex.internalMap = /*#__PURE__*/React.createElement(GraphMap, {
+            zoomOutFunction: zoomOutFunction
+          });
+        }
+
         state.internalId = id;
         state.renderInternal = true;
         return state;
@@ -187,7 +204,9 @@ class GraphMap extends React.Component {
     const vertexes = this.state.vertexes;
     if (this.state.renderInternal) return vertexes[this.state.internalId].internalMap;
     const edges = this.state.edges;
-    return /*#__PURE__*/React.createElement("svg", {
+    return /*#__PURE__*/React.createElement("div", {
+      onWheel: e => e.deltaY > 0 ? this.state.zoomOutFunction() : undefined
+    }, /*#__PURE__*/React.createElement("svg", {
       className: "graphMap",
       xmlns: "http://www.w3.org/2000/svg",
       width: "100vw",
@@ -213,7 +232,7 @@ class GraphMap extends React.Component {
         onWheel: this.handleWheel,
         key: key
       });
-    }));
+    })));
   }
 
 }

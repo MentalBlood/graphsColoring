@@ -140,9 +140,12 @@ class GraphMap extends React.Component {
 		this.state = this.generateNewMap();
 		this.state['renderInternal'] = false;
 		this.state['internalId'] = undefined;
+		this.state['zoomOutFunction'] =
+			props.zoomOutFunction ? props.zoomOutFunction : () => undefined;
 
 		this.changeVertexColor = this.changeVertexColor.bind(this);
 		this.handleWheel = this.handleWheel.bind(this);
+		this.zoomOutOfInternalMap = this.zoomOutOfInternalMap.bind(this);
 	}
 
 	generateNewMap() {
@@ -170,17 +173,28 @@ class GraphMap extends React.Component {
 		});
 	}
 
+	zoomOutOfInternalMap() {
+		this.setState({
+			renderInternal: false,
+			internalId: undefined
+		});
+	}
+
 	handleWheel(e, id) {
 		if (e.deltaY < 0) {
+			const zoomOutFunction = this.zoomOutOfInternalMap;
 			this.setState(state => {
 				const vertex = state.vertexes[id];
-				if (vertex.internalMap === undefined)
-					vertex.internalMap = <GraphMap></GraphMap>;
+				if (vertex.internalMap === undefined) {
+					console.log('new internal map');
+					vertex.internalMap = <GraphMap zoomOutFunction={zoomOutFunction}></GraphMap>;
+				}
 				state.internalId = id;
 				state.renderInternal = true;
 				return state;
 			});
 		}
+
 		console.log(e.deltaY, id);
 	}
 
@@ -193,24 +207,26 @@ class GraphMap extends React.Component {
 		const edges = this.state.edges;
 
 		return (
-			<svg className="graphMap" xmlns="http://www.w3.org/2000/svg" width="100vw" height="100vh">
-				{
-					this.state.edges.map((edge, index) => {
-						const from = vertexes[edge.fromKey];
-						const to = vertexes[edge.toKey];
-						return <line className="edge" x1={from.x + 'vw'} y1={from.y + 'vh'}
-								x2={to.x + 'vw'} y2={to.y + 'vh'} key={index}/>;
-					})
-				}
-				{
-					Object.entries(vertexes).map(([key, vertex]) => {
-						return <Vertex x={vertex.x + 'vw'} y={vertex.y + 'vh'}
-								color={vertex.color} id={key}
-								onClick={this.changeVertexColor}
-								onWheel={this.handleWheel} key={key}></Vertex>;
-					})
-				}
-			</svg>
+			<div onWheel={e => (e.deltaY > 0) ? this.state.zoomOutFunction() : undefined}>
+				<svg className="graphMap" xmlns="http://www.w3.org/2000/svg" width="100vw" height="100vh">
+					{
+						this.state.edges.map((edge, index) => {
+							const from = vertexes[edge.fromKey];
+							const to = vertexes[edge.toKey];
+							return <line className="edge" x1={from.x + 'vw'} y1={from.y + 'vh'}
+									x2={to.x + 'vw'} y2={to.y + 'vh'} key={index}/>;
+						})
+					}
+					{
+						Object.entries(vertexes).map(([key, vertex]) => {
+							return <Vertex x={vertex.x + 'vw'} y={vertex.y + 'vh'}
+									color={vertex.color} id={key}
+									onClick={this.changeVertexColor}
+									onWheel={this.handleWheel} key={key}></Vertex>;
+						})
+					}
+				</svg>
+			</div>
 		);
 	}
 }
