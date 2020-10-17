@@ -133,19 +133,39 @@ function createRandomEdges(vertexes) {
 	return edges;
 }
 
+function randomString() {
+	return new Date().valueOf().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function allVertexesSameColor(vertexes) {
+	const baseColor = vertexes[0].color;
+	for (const vertex of vertexes)
+		if (vertex.color !== baseColor)
+			return false;
+	return true;
+}
+
 class GraphMap extends React.Component {
 	constructor(props) {
 		super(props);
+		console.log('constructor', props);
+
+		if (props.seed) {
+			console.log('really load map');
+			Math.seedrandom(props.seed);
+		}
 
 		this.state = this.generateNewMap();
 		this.state['renderInternal'] = false;
 		this.state['internalId'] = undefined;
 		this.state['zoomOutFunction'] =
 			props.zoomOutFunction ? props.zoomOutFunction : () => undefined;
+		this.state.win = allVertexesSameColor(Object.values(this.state.vertexes));
 
 		this.changeVertexColor = this.changeVertexColor.bind(this);
 		this.handleWheel = this.handleWheel.bind(this);
 		this.zoomOutOfInternalMap = this.zoomOutOfInternalMap.bind(this);
+		this.keyHandler = this.keyHandler.bind(this);
 	}
 
 	generateNewMap() {
@@ -169,6 +189,7 @@ class GraphMap extends React.Component {
 				const vertex = state.vertexes[connectedKey];
 				vertex.color = !vertex.color;
 			});
+			state.win = allVertexesSameColor(Object.values(state.vertexes));
 			return state;
 		});
 	}
@@ -187,7 +208,17 @@ class GraphMap extends React.Component {
 				const vertex = state.vertexes[id];
 				if (vertex.internalMap === undefined) {
 					console.log('new internal map');
-					vertex.internalMap = <GraphMap zoomOutFunction={zoomOutFunction}></GraphMap>;
+					vertex.internalMap = {
+						'seed': randomString()
+					};
+					vertex.internalMap.component = <GraphMap zoomOutFunction={zoomOutFunction}
+													seed={vertex.internalMap.seed}></GraphMap>
+					console.log('made vertex', vertex);
+				}
+				else {
+					console.log('load map', vertex);
+					vertex.internalMap.component = <GraphMap zoomOutFunction={zoomOutFunction}
+													seed={vertex.internalMap.seed}></GraphMap>
 				}
 				state.internalId = id;
 				state.renderInternal = true;
@@ -198,17 +229,40 @@ class GraphMap extends React.Component {
 		console.log(e.deltaY, id);
 	}
 
+	setVertexesColor(color) {
+		this.setState(state => {
+			for (const key of Object.keys(state.vertexes))
+				state.vertexes[key].color = color;
+			state.win = true;
+			return state;
+		});
+	}
+
+	keyHandler(event) {
+		const key = event.key;
+		const actions = {
+			'd': () => this.setVertexesColor(true),
+			'f': () => this.setVertexesColor(false)
+		};
+		if (actions.hasOwnProperty(key))
+			actions[key]();
+	}
+
 	render() {
 		const vertexes = this.state.vertexes;
 
 		if (this.state.renderInternal)
-			return vertexes[this.state.internalId].internalMap;
+			return vertexes[this.state.internalId].internalMap.component;
 
 		const edges = this.state.edges;
+		const win = this.state.win;
+		const winColor = Object.values(this.state.vertexes)[0].color ? '1' : '2';
 
 		return (
-			<div onWheel={e => (e.deltaY > 0) ? this.state.zoomOutFunction() : undefined}>
-				<svg className="graphMap" xmlns="http://www.w3.org/2000/svg" width="100vw" height="100vh">
+			<div 	onKeyPress={this.keyHandler}
+					onWheel={e => (e.deltaY > 0) ? this.state.zoomOutFunction() : undefined}
+					tabIndex='0'>
+				<svg className={"graphMap " + (win ? 'win' + ' winColor-' + winColor : '')} xmlns="http://www.w3.org/2000/svg" width="100vw" height="100vh">
 					{
 						this.state.edges.map((edge, index) => {
 							const from = vertexes[edge.fromKey];

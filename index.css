@@ -9,10 +9,33 @@
 }
 
 .edge {
-	stroke: lightgray;
 	transition-duration: 0.5s;
 }
 
 .graphMap {
+	transition-duration: 0.5s;
+}
+
+.graphMap:not(.win) {
 	background-color: black;
+}
+
+.graphMap.win.winColor-1 {
+	background-color: orange;
+}
+
+.graphMap.win.winColor-2 {
+	background-color: lightgray;
+}
+
+.graphMap:not(.win) .edge {
+	stroke: lightgray;
+}
+
+.graphMap.win.winColor-1 .edge {
+	stroke: orange;
+}
+
+.graphMap.win.winColor-2 .edge {
+	stroke: lightgray;
 }
