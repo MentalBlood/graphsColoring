@@ -148,12 +148,9 @@ function allVertexesSameColor(vertexes) {
 class GraphMap extends React.Component {
 	constructor(props) {
 		super(props);
-		console.log('constructor', props);
 
-		if (props.seed) {
-			console.log('really load map');
+		if (props.seed)
 			Math.seedrandom(props.seed);
-		}
 
 		this.state = this.generateNewMap();
 		this.state['renderInternal'] = false;
@@ -194,10 +191,14 @@ class GraphMap extends React.Component {
 		});
 	}
 
-	zoomOutOfInternalMap() {
-		this.setState({
-			renderInternal: false,
-			internalId: undefined
+	zoomOutOfInternalMap(internalWinColor) {
+		console.log('internalWinColor:', internalWinColor);
+		this.setState(state => {
+			if (internalWinColor !== undefined)
+				state.vertexes[state.internalId].color = internalWinColor === '1';
+			state.renderInternal = false;
+			state.internalId = undefined;
+			return state;
 		});
 	}
 
@@ -207,26 +208,20 @@ class GraphMap extends React.Component {
 			this.setState(state => {
 				const vertex = state.vertexes[id];
 				if (vertex.internalMap === undefined) {
-					console.log('new internal map');
 					vertex.internalMap = {
 						'seed': randomString()
 					};
 					vertex.internalMap.component = <GraphMap zoomOutFunction={zoomOutFunction}
 													seed={vertex.internalMap.seed}></GraphMap>
-					console.log('made vertex', vertex);
-				}
-				else {
-					console.log('load map', vertex);
+					}
+				else
 					vertex.internalMap.component = <GraphMap zoomOutFunction={zoomOutFunction}
 													seed={vertex.internalMap.seed}></GraphMap>
-				}
 				state.internalId = id;
 				state.renderInternal = true;
 				return state;
 			});
 		}
-
-		console.log(e.deltaY, id);
 	}
 
 	setVertexesColor(color) {
@@ -256,11 +251,11 @@ class GraphMap extends React.Component {
 
 		const edges = this.state.edges;
 		const win = this.state.win;
-		const winColor = Object.values(this.state.vertexes)[0].color ? '1' : '2';
+		const winColor = win ? (Object.values(this.state.vertexes)[0].color ? '1' : '2') : undefined;
 
 		return (
 			<div 	onKeyPress={this.keyHandler}
-					onWheel={e => (e.deltaY > 0) ? this.state.zoomOutFunction() : undefined}
+					onWheel={e => (e.deltaY > 0) ? this.state.zoomOutFunction(winColor) : undefined}
 					tabIndex='0'>
 				<svg className={"graphMap " + (win ? 'win' + ' winColor-' + winColor : '')} xmlns="http://www.w3.org/2000/svg" width="100vw" height="100vh">
 					{

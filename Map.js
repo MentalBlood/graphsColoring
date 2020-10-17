@@ -147,13 +147,7 @@ function allVertexesSameColor(vertexes) {
 class GraphMap extends React.Component {
   constructor(props) {
     super(props);
-    console.log('constructor', props);
-
-    if (props.seed) {
-      console.log('really load map');
-      Math.seedrandom(props.seed);
-    }
-
+    if (props.seed) Math.seedrandom(props.seed);
     this.state = this.generateNewMap();
     this.state['renderInternal'] = false;
     this.state['internalId'] = undefined;
@@ -193,10 +187,13 @@ class GraphMap extends React.Component {
     });
   }
 
-  zoomOutOfInternalMap() {
-    this.setState({
-      renderInternal: false,
-      internalId: undefined
+  zoomOutOfInternalMap(internalWinColor) {
+    console.log('internalWinColor:', internalWinColor);
+    this.setState(state => {
+      if (internalWinColor !== undefined) state.vertexes[state.internalId].color = internalWinColor === '1';
+      state.renderInternal = false;
+      state.internalId = undefined;
+      return state;
     });
   }
 
@@ -207,7 +204,6 @@ class GraphMap extends React.Component {
         const vertex = state.vertexes[id];
 
         if (vertex.internalMap === undefined) {
-          console.log('new internal map');
           vertex.internalMap = {
             'seed': randomString()
           };
@@ -215,22 +211,16 @@ class GraphMap extends React.Component {
             zoomOutFunction: zoomOutFunction,
             seed: vertex.internalMap.seed
           });
-          console.log('made vertex', vertex);
-        } else {
-          console.log('load map', vertex);
-          vertex.internalMap.component = /*#__PURE__*/React.createElement(GraphMap, {
-            zoomOutFunction: zoomOutFunction,
-            seed: vertex.internalMap.seed
-          });
-        }
+        } else vertex.internalMap.component = /*#__PURE__*/React.createElement(GraphMap, {
+          zoomOutFunction: zoomOutFunction,
+          seed: vertex.internalMap.seed
+        });
 
         state.internalId = id;
         state.renderInternal = true;
         return state;
       });
     }
-
-    console.log(e.deltaY, id);
   }
 
   setVertexesColor(color) {
@@ -256,10 +246,10 @@ class GraphMap extends React.Component {
     if (this.state.renderInternal) return vertexes[this.state.internalId].internalMap.component;
     const edges = this.state.edges;
     const win = this.state.win;
-    const winColor = Object.values(this.state.vertexes)[0].color ? '1' : '2';
+    const winColor = win ? Object.values(this.state.vertexes)[0].color ? '1' : '2' : undefined;
     return /*#__PURE__*/React.createElement("div", {
       onKeyPress: this.keyHandler,
-      onWheel: e => e.deltaY > 0 ? this.state.zoomOutFunction() : undefined,
+      onWheel: e => e.deltaY > 0 ? this.state.zoomOutFunction(winColor) : undefined,
       tabIndex: "0"
     }, /*#__PURE__*/React.createElement("svg", {
       className: "graphMap " + (win ? 'win' + ' winColor-' + winColor : ''),
